@@ -1,5 +1,5 @@
 Name:           userspace-rcu
-Version:        0.7.7
+Version:        0.7.16
 Release:        1%{?dist}
 Summary:        RCU (read-copy-update) implementation in user space
 
@@ -7,7 +7,6 @@ Group:          System Environment/Libraries
 License:        LGPLv2+
 URL:            http://lttng.org/urcu/
 Source0:        http://lttng.org/files/urcu/%{name}-%{version}.tar.bz2
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  pkgconfig 
 # Upstream do not yet support mips
 ExcludeArch:    mips
@@ -43,13 +42,9 @@ V=1 make %{?_smp_mflags}
 
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -vf $RPM_BUILD_ROOT%{_libdir}/*.la
 
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %check
 #TODO greenscientist: make check currently fail in mockbuild
@@ -61,14 +56,12 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %files
-%defattr(-,root,root,-)
 %doc LICENSE gpl-2.0.txt lgpl-relicensing.txt lgpl-2.1.txt
 %{_docdir}/%{name}/README
 %{_docdir}/%{name}/ChangeLog
 %{_libdir}/*.so.*
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/*
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/liburcu*.pc
@@ -77,6 +70,15 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Dec  8 2015 Peter Robinson <pbrobinson@fedoraproject.org> 0.7.16-1
+- Update to 0.7.16
+
+* Sat Jan 18 2014 Peter Robinson <pbrobinson@fedoraproject.org> 0.7.9-1
+- Update to 0.7.9
+
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.7.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
 * Fri Jul 05 2013 Yannick Brosseau <yannick.brosseau@gmail.com> - 0.7.7-1
 - New upstream version
 
