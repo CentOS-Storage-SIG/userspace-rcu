@@ -1,6 +1,6 @@
 Name:           userspace-rcu
 Version:        0.7.16
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        RCU (read-copy-update) implementation in user space
 
 Group:          System Environment/Libraries
@@ -70,6 +70,9 @@ rm -vf $RPM_BUILD_ROOT%{_libdir}/*.la
 
 
 %changelog
+* Wed Jun 15 2016 Niels de Vos <ndevos@redhat.com> 0.7.16-3
+- Rebuilt for CentOS Storage SIG, new ppc64le architecture
+
 * Wed Jun 15 2016 Niels de Vos <ndevos@redhat.com> 0.7.16-2
 - Rebuilt for CentOS Storage SIG, new i686 architecture
 
