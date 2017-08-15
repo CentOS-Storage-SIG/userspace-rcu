@@ -1,15 +1,19 @@
+
 Name:           userspace-rcu
-Version:        0.7.16
+Version:        0.10.0
 Release:        3%{?dist}
-Summary:        RCU (read-copy-update) implementation in user space
+Summary:        RCU (read-copy-update) implementation in user-space
 
 Group:          System Environment/Libraries
 License:        LGPLv2+
-URL:            http://lttng.org/urcu/
+URL:            http://liburcu.org
 Source0:        http://lttng.org/files/urcu/%{name}-%{version}.tar.bz2
-BuildRequires:  pkgconfig 
-# Upstream do not yet support mips
-ExcludeArch:    mips
+Patch0:         regtest-without-bench.patch
+BuildRequires:  pkgconfig
+BuildRequires:  perl-Test-Harness
+BuildRequires:  autoconf automake libtool
+
+%{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 %description
 This data synchronization library provides read-side access which scales
@@ -30,14 +34,13 @@ developing applications that use %{name}.
 
 %prep
 %setup -q
-
+%patch0 -p1
 
 %build
-%configure --disable-static
-#Remove Rpath from build system
-sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
-sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
+# Reinitialize libtool with the fedora version to remove Rpath
+autoreconf -vif
 
+%configure --disable-static
 V=1 make %{?_smp_mflags}
 
 
@@ -47,37 +50,87 @@ rm -vf $RPM_BUILD_ROOT%{_libdir}/*.la
 
 
 %check
-#TODO greenscientist: make check currently fail in mockbuild
-#make check
+make check
+make regtest
 
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
 
 
 %files
-%doc LICENSE gpl-2.0.txt lgpl-relicensing.txt lgpl-2.1.txt
-%{_docdir}/%{name}/README
-%{_docdir}/%{name}/ChangeLog
+%doc ChangeLog LICENSE README.md gpl-2.0.txt lgpl-relicensing.txt lgpl-2.1.txt
 %{_libdir}/*.so.*
+/usr/share/doc/userspace-rcu/LICENSE
+/usr/share/doc/userspace-rcu/README.md
+
 
 %files devel
+%doc %{_pkgdocdir}/examples
 %{_includedir}/*
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/liburcu*.pc
-%{_docdir}/%{name}/README
-%{_docdir}/%{name}/*.txt
+%{_docdir}/%{name}/cds-api.md
+%{_docdir}/%{name}/rcu-api.md
+%{_docdir}/%{name}/solaris-build.md
+%{_docdir}/%{name}/uatomic-api.md
 
 
 %changelog
-* Wed Jun 15 2016 Niels de Vos <ndevos@redhat.com> 0.7.16-3
-- Rebuilt for CentOS Storage SIG, new ppc64le architecture
+* Tue Aug 15 2017 Thomas Oulevey <thomas.oulevey@cern.ch> - 0.10.0-3
+- Rebuilt for centos
+- Define pkgdocdir
 
-* Wed Jun 15 2016 Niels de Vos <ndevos@redhat.com> 0.7.16-2
-- Rebuilt for CentOS Storage SIG, new i686 architecture
+* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.10.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
-* Tue Dec  8 2015 Peter Robinson <pbrobinson@fedoraproject.org> 0.7.16-1
-- Update to 0.7.16
+* Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.10.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
+* Thu Jun 22 2017 Michael Jeanson <mjeanson@efficios.com> - 0.10.0-1
+- New upstream release
+
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.9.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Wed Nov 30 2016 Michael Jeanson <mjeanson@efficios.com> - 0.9.3-1
+- New upstream release
+
+* Wed Jun 22 2016 Michael Jeanson <mjeanson@efficios.com> - 0.9.2-2
+- Re-add rpath removing
+
+* Tue Jun 21 2016 Michael Jeanson <mjeanson@efficios.com> - 0.9.2-1
+- New upstream release
+- Dropped aarch64 patch merged upstream
+
+* Sun May 15 2016 Yaakov Selkowitz <yselkowi@redhat.com> - 0.8.6-4
+- Fix %%doc usage (#1001239)
+
+* Fri Feb 05 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.8.6-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Fri Jun 19 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.6-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Thu Feb 26 2015 Scott Tsai <scottt.tw@gmail.com> - 0.8.6-1
+- New upstream release
+
+* Sun Nov 02 2014 Suchakra Sharma <suchakra@fedoraproject.org> - 0.8.5-1
+- New upstream release
+
+* Mon Aug 18 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.1-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Thu May 22 2014 Marcin Juszkiewicz <mjuszkiewicz@redhat.com> - 0.8.1-3
+- Use upstream patch for aarch64 (includes ppc64le too)
+
+* Thu May 22 2014 Marcin Juszkiewicz <mjuszkiewicz@redhat.com> - 0.8.1-2
+- Added AArch64 support
+
+* Mon Feb 10 2014 Yannick Brosseau <yannick.brosseau@gmail.com> 0.8.1-1
+- New upstream release
 
 * Sat Jan 18 2014 Peter Robinson <pbrobinson@fedoraproject.org> 0.7.9-1
 - Update to 0.7.9
@@ -95,7 +148,7 @@ rm -vf $RPM_BUILD_ROOT%{_libdir}/*.la
 - New upstream version
 
 * Tue Oct 23 2012 Yannick Brosseau <yannick.brosseau@gmail.com> - 0.7.5-1
-- New upstream version 
+- New upstream version
 
 * Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.7.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
