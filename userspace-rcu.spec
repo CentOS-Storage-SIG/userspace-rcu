@@ -13,7 +13,11 @@ BuildRequires:  pkgconfig
 BuildRequires:  perl-Test-Harness
 BuildRequires:  autoconf automake libtool
 
+%if ( 0%{?rhel} && 0%{?rhel} < 7 )
+%{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}}
+%else
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
+%endif
 
 %description
 This data synchronization library provides read-side access which scales
@@ -76,6 +80,9 @@ make regtest
 
 
 %changelog
+* Wed Nov 20 2019 Kaleb S. KEITHLEY <kkeithle[at]redhat.com> - 0.10.0-3
+- build for storage6-gluster-7, pkgdocdir
+
 * Tue Aug 15 2017 Thomas Oulevey <thomas.oulevey@cern.ch> - 0.10.0-3
 - Rebuilt for centos
 - Define pkgdocdir
